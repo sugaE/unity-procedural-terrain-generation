@@ -12,7 +12,7 @@ public class MapGeneratorEditor : Editor
 
         MapGenerator mapGenerator = (MapGenerator)target;
 
-        if (DrawDefaultInspector())
+        if (DrawDefaultInspector() && mapGenerator.autoUpdate)
         {
             mapGenerator.GenerateMap();
         }
@@ -22,4 +22,5 @@ public class MapGeneratorEditor : Editor
         }
 
     }
+
 }
