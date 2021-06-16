@@ -34,7 +34,7 @@ public class MapGenerator : MonoBehaviour {
     Queue<MapthreadInfo<MeshData>> meshDataThreadInfoQ = new Queue<MapthreadInfo<MeshData>>();
 
     public void DrawMapInEditor() {
-        MapData mapData = GenerateMapData();
+        MapData mapData = GenerateMapData(Vector2.zero);
 
         MapDisplay display = FindObjectOfType<MapDisplay>();
         if (drawMode == DrawMode.NoiseMap) {
@@ -48,29 +48,29 @@ public class MapGenerator : MonoBehaviour {
         }
     }
 
-    public void RequestMapData(Action<MapData> callback) {
+    public void RequestMapData(Vector2 centre, Action<MapData> callback) {
         ThreadStart threadStart = delegate {
-            MapDataThread(callback);
+            MapDataThread(centre, callback);
         };
 
         new Thread(threadStart).Start();
     }
-    public void RequestMeshData(MapData mapData, Action<MeshData> callback) {
+    public void RequestMeshData(MapData mapData, int lod, Action<MeshData> callback) {
         ThreadStart threadStart = delegate {
-            MeshDataThread(mapData, callback);
+            MeshDataThread(mapData, lod, callback);
         };
 
         new Thread(threadStart).Start();
     }
 
-    void MeshDataThread(MapData mapData, Action<MeshData> callback) {
-        MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, levelOfDetail);
+    void MeshDataThread(MapData mapData, int lod, Action<MeshData> callback) {
+        MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod);
         lock (meshDataThreadInfoQ) {
             meshDataThreadInfoQ.Enqueue(new MapthreadInfo<MeshData>(callback, meshData));
         }
     }
-    void MapDataThread(Action<MapData> callback) {
-        MapData mapData = GenerateMapData();
+    void MapDataThread(Vector2 centre, Action<MapData> callback) {
+        MapData mapData = GenerateMapData(centre);
         lock (mapDataThreadInfoQ) {
             mapDataThreadInfoQ.Enqueue(new MapthreadInfo<MapData>(callback, mapData));
         }
@@ -91,9 +91,9 @@ public class MapGenerator : MonoBehaviour {
         }
     }
 
-    public MapData GenerateMapData()
+    public MapData GenerateMapData(Vector2 centre)
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapChuckSize, mapChuckSize, seed, noiseScale, octaves, persistence, lacunarity, offset);
+        float[,] noiseMap = Noise.GenerateNoiseMap(mapChuckSize, mapChuckSize, seed, noiseScale, octaves, persistence, lacunarity, centre + offset);
 
         Color[] colorMap = new Color[mapChuckSize * mapChuckSize];
 
