@@ -3,13 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
-public enum DrawMode
-{
-    Mesh,
-    NoiseMap,
-    ColorMap
-}
 public class MapGenerator : MonoBehaviour {
+    public enum DrawMode { Mesh, NoiseMap, ColorMap, FalloffMap }
     public DrawMode drawMode;
     public const int mapChuckSize = 241;//240 can be divided by 1,2,4,6,8,10,12
     [Range(0, 6)]
@@ -27,12 +22,18 @@ public class MapGenerator : MonoBehaviour {
 
     public int seed;
     public Vector2 offset;
+    public bool useFalloff;
 
     public TerrainType[] regions;
     public bool autoUpdate;
+    float[,] falloffMap;
 
     Queue<MapthreadInfo<MapData>> mapDataThreadInfoQ = new Queue<MapthreadInfo<MapData>>();
     Queue<MapthreadInfo<MeshData>> meshDataThreadInfoQ = new Queue<MapthreadInfo<MeshData>>();
+
+    private void Awake() {
+        falloffMap = FalloffGenerator.GenerateFalloffMap(mapChuckSize);
+    }
 
     public void DrawMapInEditor() {
         MapData mapData = GenerateMapData(Vector2.zero);
@@ -46,6 +47,8 @@ public class MapGenerator : MonoBehaviour {
         } else if (drawMode == DrawMode.Mesh) {
             display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, levelOfDetail), TextureGenerator.TextureFromColorMap(mapData.colorMap, mapChuckSize, mapChuckSize));
 
+        } else if (drawMode == DrawMode.FalloffMap) {
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChuckSize)));
         }
     }
 
@@ -100,6 +103,9 @@ public class MapGenerator : MonoBehaviour {
 
         for (int j = 0; j < mapChuckSize; j++) {
             for (int i = 0; i < mapChuckSize; i++) {
+                if (useFalloff) {
+                    noiseMap[i, j] = Mathf.Clamp01(noiseMap[i, j] - falloffMap[i, j]);
+                }
                 float currentH = noiseMap[i, j];
                 for (int k = 0; k < regions.Length; k++) {
                     if (currentH <= regions[k].height) {
@@ -122,6 +128,8 @@ public class MapGenerator : MonoBehaviour {
         // if (mapChuckSize < 1) mapChuckSize = 1;
         if (lacunarity < 1) lacunarity = 1;
         if (octaves < 0) octaves = 0;
+
+        falloffMap = FalloffGenerator.GenerateFalloffMap(mapChuckSize);
 
     }
 
