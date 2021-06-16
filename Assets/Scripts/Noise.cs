@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public static class Noise
@@ -14,13 +15,13 @@ public static class Noise
 
         float[,] noiseMap = new float[mapWidth, mapHeight];
 
-        // Random prgn =
-        Random.InitState(seed);
+        // Random.InitState(seed); // InitState can only be called from the main thread.
+        System.Random prgn = new System.Random(seed);
         Vector2[] octavesOffset = new Vector2[octaves];
         for (int i = 0; i < octaves; i++)
         {
-            float offsetX = Random.Range(-100000f, 100000f) + offset.x;
-            float offsetY = Random.Range(-100000f, 100000f) + offset.y;
+            float offsetX = prgn.Next(-100000, 100000) + offset.x;
+            float offsetY = prgn.Next(-100000, 100000) + offset.y;
             octavesOffset[i] = new Vector2(offsetX, offsetY);
         }
 
@@ -46,8 +47,8 @@ public static class Noise
 
                 for (int k = 0; k < octaves; k++)
                 {
-                    float sampleX = (i - halfW) * scale * frequency + octavesOffset[k].x;
-                    float sampleY = (j - halfH) * scale * frequency + octavesOffset[k].y;
+                    float sampleX = (i - halfW) / scale * frequency + octavesOffset[k].x;
+                    float sampleY = (j - halfH) / scale * frequency + octavesOffset[k].y;
 
                     float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2f - 1f;
                     noiseHeight += perlinValue * amplitude;

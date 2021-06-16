@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public static class MeshGenerator {
-    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve heightCurve, int levelOfDetail) {
+    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail) {
+        AnimationCurve heightCurve = new AnimationCurve(_heightCurve.keys);
         int width = heightMap.GetLength(0);
         int height = heightMap.GetLength(1);
         float topLeftX = (width - 1f) / -2f;
@@ -17,8 +18,10 @@ public static class MeshGenerator {
 
         for (int j = 0; j < height; j += meshSimplificationIncrement) {
             for (int i = 0; i < width; i += meshSimplificationIncrement) {
-                // it will create non-discrete faces; so the light will bend on edges;
+                // lock (heightCurve) {
+                    // it will create non-discrete faces; so the light will bend on edges;
                 meshData.vertices[vertexIndex] = new Vector3(topLeftX + i, heightCurve.Evaluate(heightMap[i, j]) * heightMultiplier, topLeftZ - j);
+                // }
                 meshData.uvs[vertexIndex] = new Vector2((float)i / (float)width, (float)j / (float)height);
 
                 if (j < height - 1 && i < width - 1) {
