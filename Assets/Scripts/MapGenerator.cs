@@ -16,6 +16,7 @@ public class MapGenerator : MonoBehaviour {
     public int levelOfDetail;
     public float meshHeightMultiplier;
     public AnimationCurve meshHeightCurve;
+    public Noise.NormalizeMode normalizeMode;
 
     public float noiseScale;
 
@@ -93,7 +94,7 @@ public class MapGenerator : MonoBehaviour {
 
     public MapData GenerateMapData(Vector2 centre)
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapChuckSize, mapChuckSize, seed, noiseScale, octaves, persistence, lacunarity, centre + offset);
+        float[,] noiseMap = Noise.GenerateNoiseMap(mapChuckSize, mapChuckSize, seed, noiseScale, octaves, persistence, lacunarity, centre + offset, normalizeMode);
 
         Color[] colorMap = new Color[mapChuckSize * mapChuckSize];
 
@@ -104,6 +105,9 @@ public class MapGenerator : MonoBehaviour {
                     if (currentH <= regions[k].height) {
                         colorMap[j * mapChuckSize + i] = regions[k].color;
                         break;
+                    } else if (regions.Length - 1 == k) {
+                        // for the ones that exceed 1; due to normalize & maxPossibleHeight in Noise map
+                        colorMap[j * mapChuckSize + i] = regions[k].color;
                     }
                 }
             }

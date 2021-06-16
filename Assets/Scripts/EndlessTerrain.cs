@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.PlayerLoop;
 
 public class EndlessTerrain : MonoBehaviour {
+    const float scale = 5f;
     const float viewerMoveThresholdForChunkUpdate = 25f;
     const float sqrViewerMoveThresholdForChunkUpdate = viewerMoveThresholdForChunkUpdate * viewerMoveThresholdForChunkUpdate;
     public const float maxViewDst = 450f;
@@ -20,7 +21,7 @@ public class EndlessTerrain : MonoBehaviour {
     int chunksVisibleInviewDst;
 
     Dictionary<Vector2, TerrainChunk> terrainChunkDict = new Dictionary<Vector2, TerrainChunk>();
-    List<TerrainChunk> terrainChunksVisibleLastUpdate = new List<TerrainChunk>();
+    static List<TerrainChunk> terrainChunksVisibleLastUpdate = new List<TerrainChunk>();
 
     // Start is called before the first frame update
     void Start() {
@@ -32,7 +33,7 @@ public class EndlessTerrain : MonoBehaviour {
 
     }
     private void Update() {
-        viewerPosition = new Vector2(viewer.position.x, viewer.position.z);
+        viewerPosition = new Vector2(viewer.position.x, viewer.position.z) / scale;
         if ((viewerPositionOld - viewerPosition).sqrMagnitude > sqrViewerMoveThresholdForChunkUpdate) {
             viewerPositionOld = viewerPosition;
             UpdateVisibelChunks();
@@ -54,9 +55,9 @@ public class EndlessTerrain : MonoBehaviour {
 
                 if (terrainChunkDict.ContainsKey(viewedChunkCoord)) {
                     terrainChunkDict[viewedChunkCoord].UpdateTerrainChunck();
-                    if (terrainChunkDict[viewedChunkCoord].IsVisible()) {
-                        terrainChunksVisibleLastUpdate.Add(terrainChunkDict[viewedChunkCoord]);
-                    }
+                    // if (terrainChunkDict[viewedChunkCoord].IsVisible()) {
+                    //     terrainChunksVisibleLastUpdate.Add(terrainChunkDict[viewedChunkCoord]);
+                    // }
                 } else {
                     terrainChunkDict.Add(viewedChunkCoord, new TerrainChunk(viewedChunkCoord, chunckSize, lODInfo, transform, mapMaterial));
                 }
@@ -95,8 +96,8 @@ public class EndlessTerrain : MonoBehaviour {
             meshRenderer.material = material;
             meshFilter = meshObj.AddComponent<MeshFilter>();
 
-            meshObj.transform.position = positionV3;
-            // meshObj.transform.localScale = Vector3.one * size / 10f;
+            meshObj.transform.position = positionV3 * scale;
+            meshObj.transform.localScale = Vector3.one * scale;
             meshObj.transform.parent = parent;
             SetVisible(false);
 
@@ -145,6 +146,7 @@ public class EndlessTerrain : MonoBehaviour {
                             lodMesh.RequestMesh(mapData);
                         }
                     }
+                    terrainChunksVisibleLastUpdate.Add(this);
                 }
 
                 SetVisible(visible);
