@@ -6,7 +6,7 @@ using UnityEngine;
 public class MapGenerator : MonoBehaviour {
     public enum DrawMode { Mesh, NoiseMap, ColorMap, FalloffMap }
     public DrawMode drawMode;
-    public const int mapChuckSize = 241;//240 can be divided by 1,2,4,6,8,10,12
+    public const int mapChuckSize = 241 - 2;//240 can be divided by 1,2,4,6,8,10,12
     [Range(0, 6)]
     public int levelOfDetail;
     public float meshHeightMultiplier;
@@ -97,7 +97,7 @@ public class MapGenerator : MonoBehaviour {
 
     public MapData GenerateMapData(Vector2 centre)
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapChuckSize, mapChuckSize, seed, noiseScale, octaves, persistence, lacunarity, centre + offset, normalizeMode);
+        float[,] noiseMap = Noise.GenerateNoiseMap(mapChuckSize + 2, mapChuckSize + 2, seed, noiseScale, octaves, persistence, lacunarity, centre + offset, normalizeMode);
 
         Color[] colorMap = new Color[mapChuckSize * mapChuckSize];
 
