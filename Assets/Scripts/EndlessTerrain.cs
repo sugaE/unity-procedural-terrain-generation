@@ -75,6 +75,7 @@ public class EndlessTerrain : MonoBehaviour {
 
         MeshRenderer meshRenderer;
         MeshFilter meshFilter;
+        MeshCollider meshCollider;
 
         LODInfo[] detailLevels;
         LODMesh[] lODMeshes;
@@ -95,6 +96,7 @@ public class EndlessTerrain : MonoBehaviour {
             meshRenderer = meshObj.AddComponent<MeshRenderer>();
             meshRenderer.material = material;
             meshFilter = meshObj.AddComponent<MeshFilter>();
+            meshCollider = meshObj.AddComponent<MeshCollider>();
 
             meshObj.transform.position = positionV3 * scale;
             meshObj.transform.localScale = Vector3.one * scale;
@@ -141,6 +143,7 @@ public class EndlessTerrain : MonoBehaviour {
                         LODMesh lodMesh = lODMeshes[lodInd];
                         if (lodMesh.hasMesh) {
                             meshFilter.mesh = lodMesh.mesh;
+                            meshCollider.sharedMesh = lodMesh.mesh;
                             preLODIndex = lodInd;
                         } else if (!lodMesh.hasRequestedMesh) {
                             lodMesh.RequestMesh(mapData);
@@ -193,5 +196,6 @@ public class EndlessTerrain : MonoBehaviour {
     public struct LODInfo {
         public int lod;
         public float visibleDstThreshold;
+        public bool useForCollider;
     }
 }
